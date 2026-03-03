@@ -1,11 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { login as apiLogin, register as apiRegister, logout as apiLogout, getCurrentUser } from "@/lib/Api";
+import { logDebug, logError } from '../lib/logger';
 
 export interface User {
-  id: string;
-  name: string;
-  lastName: string;
-  age: number;
+  id: number;
+  nombre: string;
+  apellido: string;
+  edad: number;
   email: string;
+  rol: string
 }
 
 interface AuthContextType {
@@ -17,65 +20,81 @@ interface AuthContextType {
 }
 
 export interface RegisterData {
-  name: string;
-  lastName: string;
-  age: number;
+  nombre: string;
+  apellido: string;
+  edad: number;
   email: string;
-  password: string;
+  password: string
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
-
-const USERS_KEY = "notes_app_users";
-const SESSION_KEY = "notes_app_session";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const session = localStorage.getItem(SESSION_KEY);
-    if (session) {
-      setUser(JSON.parse(session));
-    }
-    setIsLoading(false);
+    const loadUser = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          const userData = await getCurrentUser();
+          setUser(userData);
+        } catch (error) {
+          localStorage.removeItem("token");
+        }
+      }
+      setIsLoading(false);
+    };
+    loadUser();
   }, []);
 
   const login = async (email: string, password: string) => {
-    const usersRaw = localStorage.getItem(USERS_KEY);
-    const users: Array<User & { password: string }> = usersRaw ? JSON.parse(usersRaw) : [];
-    const found = users.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
-    );
-    if (!found) throw new Error("Email o contraseña incorrectos");
-    const { password: _, ...userWithoutPassword } = found;
-    setUser(userWithoutPassword);
-    localStorage.setItem(SESSION_KEY, JSON.stringify(userWithoutPassword));
+    logDebug('Intentando login', { email });
+    try {
+      const response = await apiLogin({ email, password });
+      logDebug('Login response:', response);
+      localStorage.setItem("token", response.token);
+      
+      try {
+        const userData = await getCurrentUser();
+        logDebug('UserData response:', userData);
+        setUser(userData);
+      } catch (meError) {
+        logError(meError, 'Error en /auth/me');
+        setUser({
+          id: 0,
+          nombre: response.nombre,
+          apellido: "",
+          edad: 0,
+          email: response.email,
+          rol: response.rol
+        });
+      }
+      
+      logDebug('Login exitoso');
+    } catch (error) {
+      logError(error, 'AuthContext login');
+      throw error;
+    }
   };
 
   const register = async (data: RegisterData) => {
-    const usersRaw = localStorage.getItem(USERS_KEY);
-    const users: Array<User & { password: string }> = usersRaw ? JSON.parse(usersRaw) : [];
-    const exists = users.find((u) => u.email.toLowerCase() === data.email.toLowerCase());
-    if (exists) throw new Error("El email ya está registrado");
-    const newUser = {
-      id: crypto.randomUUID(),
-      name: data.name,
-      lastName: data.lastName,
-      age: data.age,
-      email: data.email,
-      password: data.password,
-    };
-    users.push(newUser);
-    localStorage.setItem(USERS_KEY, JSON.stringify(users));
-    const { password: _, ...userWithoutPassword } = newUser;
-    setUser(userWithoutPassword);
-    localStorage.setItem(SESSION_KEY, JSON.stringify(userWithoutPassword));
+    logDebug('Intentando registro', data);
+    try {
+      const response = await apiRegister(data);
+      logDebug('Registro exitoso', response);
+      await login(data.email, data.password);
+    } catch (error) {
+      logError(error, 'AuthContext register');
+      throw error;
+    }
   };
 
   const logout = () => {
+    logDebug('Logout ejecutado');
+    apiLogout();
     setUser(null);
-    localStorage.removeItem(SESSION_KEY);
   };
 
   return (

@@ -29,12 +29,12 @@ export const NoteCard = ({ note, index = 0, onTagClick, showActions = true }: Pr
 
   return (
     <div
-      className="group relative rounded-xl border border-border bg-card p-5 hover:border-primary/30 hover:shadow-md-custom transition-all duration-200 animate-fade-in"
+      className="group relative rounded-xl border border-border bg-card p-4 sm:p-5 hover:border-primary/30 hover:shadow-md-custom transition-all duration-200 animate-fade-in"
       style={{ animationDelay: `${index * 50}ms`, opacity: 0, animationFillMode: "forwards" }}
     >
       {/* Actions */}
       {showActions && (
-        <div className="absolute right-3 top-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute right-2 top-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <Link to={`/notes/${note.id}/edit`}>
             <button className="rounded-lg p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
               <Edit3 className="h-3.5 w-3.5" />
@@ -50,7 +50,7 @@ export const NoteCard = ({ note, index = 0, onTagClick, showActions = true }: Pr
               <AlertDialogHeader>
                 <AlertDialogTitle>¿Eliminar nota?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Esta acción no se puede deshacer. La nota "{note.title}" se eliminará permanentemente.
+                  Esta acción no se puede deshacer. La nota "{note.titulo}" se eliminará permanentemente.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -69,18 +69,18 @@ export const NoteCard = ({ note, index = 0, onTagClick, showActions = true }: Pr
 
       {/* Content */}
       <Link to={`/notes/${note.id}`} className="block">
-        <h3 className="font-semibold text-sm leading-tight line-clamp-2 pr-12">{note.title}</h3>
-        <p className="mt-2 text-xs text-muted-foreground line-clamp-3 leading-relaxed">{note.content}</p>
+        <h3 className="font-semibold text-sm sm:text-base leading-tight line-clamp-2 pr-10 sm:pr-12">{note.titulo}</h3>
+        <p className="mt-2 text-xs sm:text-sm text-muted-foreground line-clamp-3 leading-relaxed">{note.contenido}</p>
       </Link>
 
       {/* Tags */}
-      {note.tags.length > 0 && (
+      {note.etiquetas.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
-          {note.tags.map((tag) => (
+          {note.etiquetas.map((tag) => (
             <button
               key={tag}
               onClick={() => onTagClick?.(tag)}
-              className="rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-accent-foreground hover:bg-primary/20 transition-colors"
+              className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary hover:bg-highlight hover:text-highlight-foreground transition-colors border border-border"
             >
               #{tag}
             </button>
@@ -90,7 +90,7 @@ export const NoteCard = ({ note, index = 0, onTagClick, showActions = true }: Pr
 
       {/* Date */}
       <p className="mt-3 text-xs text-muted-foreground/70">
-        {new Date(note.updatedAt).toLocaleDateString("es-ES", {
+        {new Date(note.fecha).toLocaleDateString("es-ES", {
           day: "numeric",
           month: "short",
           year: "numeric",

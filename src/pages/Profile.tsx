@@ -14,14 +14,25 @@ const Profile = () => {
 
   const stats = [
     { label: "Notas totales", value: notes.length, icon: BookOpen },
-    { label: "Etiquetas usadas", value: new Set(notes.flatMap((n) => n.tags)).size, icon: BookOpen },
+    { label: "Etiquetas usadas", value: new Set(notes.flatMap((n) => n.etiquetas)).size, icon: BookOpen },
   ];
 
   return (
     <Layout>
       <div className="mx-auto max-w-lg animate-fade-in">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold">Mi perfil</h1>
+          <div className="flex items-center gap-2 mb-2">
+            <button
+              className="rounded-full bg-primary/10 text-primary p-2 hover:bg-primary/20 transition-colors"
+              onClick={() => navigate(-1)}
+              title="Regresar"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              </svg>
+            </button>
+            <h1 className="text-2xl font-bold">Mi perfil</h1>
+          </div>
           <p className="text-sm text-muted-foreground mt-0.5">Información de tu cuenta</p>
         </div>
 
@@ -29,10 +40,10 @@ const Profile = () => {
         <div className="rounded-2xl border border-border bg-card p-6 shadow-md-custom mb-4">
           <div className="flex items-center gap-5">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-primary text-primary-foreground text-2xl font-bold">
-              {user?.name?.[0]?.toUpperCase()}
+              {user?.nombre?.[0]?.toUpperCase()}
             </div>
             <div>
-              <h2 className="text-xl font-semibold">{user?.name} {user?.lastName}</h2>
+              <h2 className="text-xl font-semibold">{user?.nombre} {user?.apellido}</h2>
               <p className="text-sm text-muted-foreground">{user?.email}</p>
             </div>
           </div>
@@ -43,9 +54,9 @@ const Profile = () => {
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Datos personales</h3>
           <div className="space-y-3">
             {[
-              { icon: User, label: "Nombre completo", value: `${user?.name} ${user?.lastName}` },
+              { icon: User, label: "Nombre completo", value: `${user?.nombre} ${user?.apellido}` },
               { icon: Mail, label: "Correo electrónico", value: user?.email },
-              { icon: Calendar, label: "Edad", value: `${user?.age} años` },
+              { icon: Calendar, label: "Edad", value: `${user?.edad} años` },
             ].map(({ icon: Icon, label, value }) => (
               <div key={label} className="flex items-center gap-3 rounded-xl bg-muted/50 px-4 py-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">

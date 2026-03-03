@@ -1,34 +1,40 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { useNotes, Note } from "@/contexts/NotesContext";
+import { useNotes } from "@/contexts/NotesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NoteCard } from "@/components/NoteCard";
 import { Search, Plus, StickyNote, Clock } from "lucide-react";
+import { logDebug, logError } from '../lib/logger';
 
 const Dashboard = () => {
+  logDebug('Renderizando Dashboard');
   const { notes } = useNotes();
   const { user } = useAuth();
+
+  // --- Lógica de Estado y Filtrado ---
   const [search, setSearch] = useState("");
   const [activeTag, setActiveTag] = useState<string | null>(null);
 
-  const allTags = useMemo(() => {
-    const tags = new Set<string>();
-    notes.forEach((n) => n.tags.forEach((t) => tags.add(t)));
-    return Array.from(tags);
-  }, [notes]);
+  const allTags = useMemo(() => 
+    Array.from(new Set(notes.flatMap(n => n.etiquetas || []))), 
+    [notes]
+  );
 
   const filtered = useMemo(() => {
-    return notes.filter((n) => {
-      const matchSearch = n.title.toLowerCase().includes(search.toLowerCase());
-      const matchTag = activeTag ? n.tags.includes(activeTag) : true;
-      return matchSearch && matchTag;
-    });
+    let result = notes;
+    if (search) {
+      result = result.filter(n => n.titulo.toLowerCase().includes(search.toLowerCase()));
+    }
+    if (activeTag) {
+      result = result.filter(n => n.etiquetas?.includes(activeTag));
+    }
+    return result;
   }, [notes, search, activeTag]);
 
-  const recentNotes = notes.slice(0, 5);
+  const recentNotes = useMemo(() => notes.slice(0, 5), [notes]);
 
   return (
     <Layout>
@@ -36,10 +42,10 @@ const Dashboard = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold">
-              Hola, {user?.name} 👋
+            <h1 className="text-2xl font-bold sm:text-3xl">
+              Hola, {user?.nombre} 👋
             </h1>
-            <p className="text-muted-foreground text-sm mt-0.5">
+            <p className="text-muted-foreground text-sm sm:text-base mt-0.5">
               {notes.length === 0
                 ? "Aún no tienes notas. ¡Crea la primera!"
                 : `Tienes ${notes.length} nota${notes.length !== 1 ? "s" : ""}`}
@@ -48,7 +54,7 @@ const Dashboard = () => {
           <Link to="/notes/new">
             <Button className="gap-2 shadow-primary w-full sm:w-auto">
               <Plus className="h-4 w-4" />
-              Nueva nota
+              <span className="hidden xs:inline">Nueva nota</span>
             </Button>
           </Link>
         </div>
@@ -58,20 +64,22 @@ const Dashboard = () => {
           <section>
             <div className="flex items-center gap-2 mb-4">
               <Clock className="h-4 w-4 text-muted-foreground" />
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Últimas notas</h2>
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Últimas notas
+              </h2>
             </div>
-            <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin scrollbar-thumb-muted/40 scrollbar-track-transparent">
               {recentNotes.map((note, i) => (
                 <Link
                   key={note.id}
                   to={`/notes/${note.id}`}
-                  className="flex-shrink-0 w-52 rounded-xl border border-border bg-card p-4 hover:border-primary/40 hover:shadow-md-custom transition-all duration-200 animate-fade-in"
+                  className="flex-shrink-0 w-52 sm:w-60 rounded-xl border border-border bg-card p-4 hover:border-primary/40 hover:shadow-md-custom transition-all duration-200 animate-fade-in"
                   style={{ animationDelay: `${i * 60}ms` }}
                 >
-                  <p className="font-medium text-sm line-clamp-1">{note.title}</p>
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{note.content}</p>
+                  <p className="font-medium text-sm line-clamp-1">{note.titulo}</p>
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{note.contenido}</p>
                   <p className="text-xs text-muted-foreground mt-2">
-                    {new Date(note.createdAt).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
+                    {new Date(note.fecha).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
                   </p>
                 </Link>
               ))}
@@ -88,7 +96,7 @@ const Dashboard = () => {
                 placeholder="Buscar por título..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-11"
+                className="pl-9 h-11 text-base"
               />
             </div>
           </div>
@@ -134,7 +142,7 @@ const Dashboard = () => {
               <p className="text-sm text-muted-foreground mt-1">
                 {search || activeTag ? "Intenta con otros términos" : "Crea tu primera nota"}
               </p>
-              {!search && !activeTag && (
+              {(!search && !activeTag) && (
                 <Link to="/notes/new" className="mt-4">
                   <Button size="sm" className="shadow-primary">
                     <Plus className="h-4 w-4 mr-2" />

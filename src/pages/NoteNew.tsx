@@ -7,8 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Plus, X, Save } from "lucide-react";
+import { logDebug, logError } from '../lib/logger';
 
 const NoteNew = () => {
+  logDebug('Renderizando NoteNew');
   const { createNote } = useNotes();
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
@@ -27,28 +29,38 @@ const NoteNew = () => {
     if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addTag(); }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) { setError("El título es obligatorio."); return; }
-    if (!content.trim()) { setError("El contenido es obligatorio."); return; }
-    createNote({ title: title.trim(), content: content.trim(), tags });
-    navigate("/dashboard");
+    setError("");
+    logDebug('Creando nueva nota', { title, content, tags });
+    if (!title || !content) {
+      setError('Completa título y contenido');
+      return;
+    }
+    try {
+      await createNote({ titulo: title, contenido: content, etiquetas: tags });
+      logDebug('Nota creada correctamente');
+      navigate('/dashboard');
+    } catch (err) {
+      logError(err, 'NoteNew.tsx');
+      setError('Error al crear la nota');
+    }
   };
 
   return (
     <Layout>
-      <div className="mx-auto max-w-2xl animate-fade-in">
-        <div className="mb-6 flex items-center gap-3">
+      <div className="mx-auto max-w-2xl animate-fade-in px-2 sm:px-0">
+        <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-xl font-bold">Nueva nota</h1>
-            <p className="text-sm text-muted-foreground">Escribe y organiza tus ideas</p>
+            <h1 className="text-xl font-bold sm:text-2xl">Nueva nota</h1>
+            <p className="text-sm text-muted-foreground sm:text-base">Escribe y organiza tus ideas</p>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-md-custom">
+        <div className="rounded-2xl border border-border bg-card p-4 sm:p-6 shadow-md-custom">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="title">Título *</Label>
@@ -68,14 +80,14 @@ const NoteNew = () => {
                 placeholder="Escribe tu nota aquí..."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                rows={10}
-                className="resize-none leading-relaxed"
+                rows={8}
+                className="resize-none leading-relaxed text-base"
               />
             </div>
 
             <div className="space-y-2">
               <Label>Etiquetas</Label>
-              <div className="flex gap-2">
+              <div className="flex flex-col xs:flex-row gap-2">
                 <Input
                   placeholder="Escribe una etiqueta y presiona Enter"
                   value={tagInput}
@@ -107,7 +119,7 @@ const NoteNew = () => {
               </div>
             )}
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex flex-col xs:flex-row gap-3 pt-2">
               <Button type="button" variant="outline" onClick={() => navigate(-1)} className="flex-1">
                 Cancelar
               </Button>

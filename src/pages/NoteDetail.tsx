@@ -19,7 +19,7 @@ const NoteDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { getNoteById, deleteNote } = useNotes();
   const navigate = useNavigate();
-  const note = getNoteById(id!);
+  const note = getNoteById(Number(id));
 
   if (!note) {
     return (
@@ -36,18 +36,13 @@ const NoteDetail = () => {
 
   return (
     <Layout>
-      <div className="mx-auto max-w-2xl animate-fade-in">
-        <div className="mb-6 flex items-center justify-between">
+      <div className="mx-auto max-w-2xl animate-fade-in px-2 sm:px-0">
+        <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div className="flex gap-2">
-            <Link to={`/notes/${id}/edit`}>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Edit3 className="h-4 w-4" />
-                Editar
-              </Button>
-            </Link>
+          <div className="flex gap-2 mt-2 sm:mt-0">
+            {/* Botón de editar eliminado para solo lectura */}
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2 text-destructive hover:text-destructive border-destructive/20 hover:border-destructive/40 hover:bg-destructive/5">
@@ -76,34 +71,28 @@ const NoteDetail = () => {
           </div>
         </div>
 
-        <article className="rounded-2xl border border-border bg-card p-6 shadow-md-custom">
-          <h1 className="text-2xl font-bold leading-tight mb-4">{note.title}</h1>
+        <article className="rounded-2xl border border-border bg-card p-4 sm:p-6 shadow-md-custom">
+          <h1 className="text-2xl font-bold sm:text-3xl leading-tight mb-4">{note.titulo}</h1>
 
-          <div className="flex flex-wrap gap-4 text-xs text-muted-foreground mb-5 pb-5 border-b border-border">
+          <div className="flex flex-wrap gap-4 text-xs sm:text-sm text-muted-foreground mb-5 pb-5 border-b border-border">
             <span className="flex items-center gap-1.5">
               <Calendar className="h-3.5 w-3.5" />
-              Creada: {new Date(note.createdAt).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}
+              Creada: {new Date(note.fecha).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}
             </span>
-            {note.updatedAt !== note.createdAt && (
-              <span className="flex items-center gap-1.5">
-                <Edit3 className="h-3.5 w-3.5" />
-                Editada: {new Date(note.updatedAt).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}
-              </span>
-            )}
           </div>
 
           <div className="prose prose-sm max-w-none">
-            <p className="text-foreground/90 leading-relaxed whitespace-pre-wrap">{note.content}</p>
+            <p className="text-foreground/90 leading-relaxed whitespace-pre-wrap text-base">{note.contenido}</p>
           </div>
 
-          {note.tags.length > 0 && (
+          {note.etiquetas.length > 0 && (
             <div className="mt-6 pt-5 border-t border-border">
               <div className="flex items-center gap-2 mb-3">
                 <Tag className="h-3.5 w-3.5 text-muted-foreground" />
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Etiquetas</span>
               </div>
               <div className="flex flex-wrap gap-2">
-                {note.tags.map((tag) => (
+                {note.etiquetas.map((tag) => (
                   <Link key={tag} to={`/dashboard`}>
                     <span className="rounded-full bg-accent px-3 py-1 text-xs font-medium text-accent-foreground hover:bg-primary/20 transition-colors cursor-pointer">
                       #{tag}

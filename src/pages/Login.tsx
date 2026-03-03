@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,10 @@ const Login = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Estados para controlar cuándo permitir que el navegador escriba
+  const [emailReadOnly, setEmailReadOnly] = useState(true);
+  const [passReadOnly, setPassReadOnly] = useState(true);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -23,8 +27,8 @@ const Login = () => {
     try {
       await login(email, password);
       navigate("/dashboard");
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Error al iniciar sesión");
+    } catch (err: any) {
+      setError(err.message || "Error al iniciar sesión");
     } finally {
       setLoading(false);
     }
@@ -33,7 +37,6 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md animate-fade-in">
-        {/* Logo */}
         <div className="mb-8 text-center">
           <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary shadow-primary mb-4">
             <BookOpen className="h-7 w-7 text-primary-foreground" />
@@ -42,7 +45,6 @@ const Login = () => {
           <p className="mt-1 text-muted-foreground text-sm">Inicia sesión en tu cuenta</p>
         </div>
 
-        {/* Card */}
         <div className="rounded-2xl border border-border bg-card p-8 shadow-md-custom">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
@@ -53,21 +55,28 @@ const Login = () => {
                 placeholder="tu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
                 className="h-11"
+                /* TRUCO: Solo lectura hasta que el usuario haga foco */
+                readOnly={emailReadOnly}
+                onFocus={() => setEmailReadOnly(false)}
+                autoComplete="email"
               />
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña</Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPass ? "text" : "password"}
-                  placeholder="••••••••"
+                  placeholder="tu contraseña"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
                   className="h-11 pr-10"
+                  /* TRUCO: Solo lectura hasta que el usuario haga foco */
+                  readOnly={passReadOnly}
+                  onFocus={() => setPassReadOnly(false)}
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"

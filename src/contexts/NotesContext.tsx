@@ -1,81 +1,110 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
+import {  fetchNotes as apiFetchNotes,createNote as apiCreateNote,updateNote as apiUpdateNote,deleteNote as apiDeleteNote,} from "@/lib/Api";
+import { logDebug, logError } from '../lib/logger';
 
 export interface Note {
-  id: string;
-  userId: string;
-  title: string;
-  content: string;
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
+  id: number;  
+  titulo: string;  
+  contenido: string;  
+  etiquetas: string[];  
+  fecha: string;  
+  usuarioId: number; 
 }
 
 interface NotesContextType {
   notes: Note[];
-  createNote: (data: { title: string; content: string; tags: string[] }) => void;
-  updateNote: (id: string, data: { title: string; content: string; tags: string[] }) => void;
-  deleteNote: (id: string) => void;
-  getNoteById: (id: string) => Note | undefined;
+  loading: boolean;
+  createNote: (data: { titulo: string; contenido: string; etiquetas: string[] }) => Promise<void>;
+  updateNote: (id: number, data: { titulo: string; contenido: string; etiquetas: string[] }) => Promise<void>;
+  deleteNote: (id: number) => Promise<void>;
+  getNoteById: (id: number) => Note | undefined;
+  refreshNotes: () => Promise<void>;
 }
 
 const NotesContext = createContext<NotesContextType | null>(null);
-const NOTES_KEY = "notes_app_notes";
+
 
 export const NotesProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
   const [notes, setNotes] = useState<Note[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const refreshNotes = async () => {
+    logDebug('Refrescando notas');
+    if (!user) return;
+    setLoading(true);
+    try {
+      const data = await apiFetchNotes();
+      setNotes(data);
+      logDebug('Notas actualizadas', data);
+    } catch (error) {
+      logError(error, 'NotesContext refreshNotes');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (!user) { setNotes([]); return; }
-    const raw = localStorage.getItem(NOTES_KEY);
-    const all: Note[] = raw ? JSON.parse(raw) : [];
-    const userNotes = all
-      .filter((n) => n.userId === user.id)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    setNotes(userNotes);
+    logDebug('NotesContext useEffect: usuario cambiado', user);
+    if (user) {
+      refreshNotes();
+    } else {
+      setNotes([]);
+    }
   }, [user]);
 
-  const saveAll = (updated: Note[]) => {
-    const raw = localStorage.getItem(NOTES_KEY);
-    const all: Note[] = raw ? JSON.parse(raw) : [];
-    const othersNotes = all.filter((n) => n.userId !== user?.id);
-    localStorage.setItem(NOTES_KEY, JSON.stringify([...othersNotes, ...updated]));
-    const sorted = [...updated].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-    setNotes(sorted);
-  };
-
-  const createNote = (data: { title: string; content: string; tags: string[] }) => {
+  const createNote = async (data: { titulo: string; contenido: string; etiquetas: string[] }) => {
+    logDebug('Creando nota', data);
     if (!user) return;
-    const note: Note = {
-      id: crypto.randomUUID(),
-      userId: user.id,
-      title: data.title,
-      content: data.content,
-      tags: data.tags,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    saveAll([note, ...notes]);
+    try {
+      const newNote = await apiCreateNote(data);
+      setNotes(prev => [newNote, ...prev]);
+      logDebug('Nota creada', newNote);
+    } catch (error) {
+      logError(error, 'NotesContext createNote');
+      throw error;
+    }
   };
 
-  const updateNote = (id: string, data: { title: string; content: string; tags: string[] }) => {
-    const updated = notes.map((n) =>
-      n.id === id ? { ...n, ...data, updatedAt: new Date().toISOString() } : n
-    );
-    saveAll(updated);
+  const updateNote = async (id: number, data: { titulo: string; contenido: string; etiquetas: string[] }) => {
+    logDebug('Actualizando nota', { id, ...data });
+    try {
+      const updatedNote = await apiUpdateNote(id.toString(), data);
+      setNotes(prev => prev.map(n => n.id === id ? updatedNote : n));
+      logDebug('Nota actualizada', updatedNote);
+    } catch (error) {
+      logError(error, 'NotesContext updateNote');
+      throw error;
+    }
   };
 
-  const deleteNote = (id: string) => {
-    saveAll(notes.filter((n) => n.id !== id));
+  const deleteNote = async (id: number) => {
+    logDebug('Eliminando nota', id);
+    try {
+      await apiDeleteNote(id.toString());
+      setNotes(prev => prev.filter(n => n.id !== id));
+      logDebug('Nota eliminada', id);
+    } catch (error) {
+      logError(error, 'NotesContext deleteNote');
+      throw error;
+    }
   };
 
-  const getNoteById = (id: string) => notes.find((n) => n.id === id);
+  const getNoteById = (id: number) => notes.find((n) => n.id === id);
 
   return (
-    <NotesContext.Provider value={{ notes, createNote, updateNote, deleteNote, getNoteById }}>
+    <NotesContext.Provider 
+      value={{ 
+        notes, 
+        loading,
+        createNote, 
+        updateNote, 
+        deleteNote, 
+        getNoteById,
+        refreshNotes 
+      }}
+    >
       {children}
     </NotesContext.Provider>
   );

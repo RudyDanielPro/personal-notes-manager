@@ -25,10 +25,10 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Top nav */}
-      <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+      <header className="sticky top-0 z-50 border-b border-border bg-secondary/80 backdrop-blur-md text-foreground">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-2 sm:px-6">
           {/* Logo */}
           <Link to="/dashboard" className="flex items-center gap-2.5 group">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary shadow-primary group-hover:scale-105 transition-transform">
@@ -47,7 +47,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                   <Button
                     variant={active ? "secondary" : "ghost"}
                     size="sm"
-                    className="gap-2 hidden sm:inline-flex"
+                    className="gap-2 hidden xs:inline-flex"
                   >
                     <Icon className="h-4 w-4" />
                     {item.label}
@@ -59,7 +59,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
             <Link to="/notes/new">
               <Button size="sm" className="gap-2 shadow-primary">
                 <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Nueva nota</span>
+                <span className="hidden xs:inline">Nueva nota</span>
               </Button>
             </Link>
 
@@ -67,13 +67,13 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary font-semibold text-sm">
-                    {user?.name?.[0]?.toUpperCase()}
+                    {user?.nombre ? user.nombre[0].toUpperCase() : "?"}
                   </div>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <div className="px-3 py-2">
-                  <p className="text-sm font-medium">{user?.name} {user?.lastName}</p>
+                  <p className="text-sm font-medium">{user?.nombre} {user?.apellido}</p>
                   <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                 </div>
                 <DropdownMenuSeparator />
