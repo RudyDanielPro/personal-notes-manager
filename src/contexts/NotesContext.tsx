@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 import {  fetchNotes as apiFetchNotes,createNote as apiCreateNote,updateNote as apiUpdateNote,deleteNote as apiDeleteNote,} from "@/lib/Api";
-import { logDebug, logError } from '../lib/logger';
+import { logError } from '../lib/logger';
 
 export interface Note {
   id: number;  
@@ -31,13 +31,13 @@ export const NotesProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(false);
 
   const refreshNotes = async () => {
-    logDebug('Refrescando notas');
+    // logDebug eliminado
     if (!user) return;
     setLoading(true);
     try {
       const data = await apiFetchNotes();
       setNotes(data);
-      logDebug('Notas actualizadas', data);
+      // logDebug eliminado
     } catch (error) {
       logError(error, 'NotesContext refreshNotes');
     } finally {
@@ -46,7 +46,7 @@ export const NotesProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
-    logDebug('NotesContext useEffect: usuario cambiado', user);
+    // logDebug eliminado
     if (user) {
       refreshNotes();
     } else {
@@ -55,12 +55,12 @@ export const NotesProvider = ({ children }: { children: React.ReactNode }) => {
   }, [user]);
 
   const createNote = async (data: { titulo: string; contenido: string; etiquetas: string[] }) => {
-    logDebug('Creando nota', data);
+    // logDebug eliminado
     if (!user) return;
     try {
       const newNote = await apiCreateNote(data);
       setNotes(prev => [newNote, ...prev]);
-      logDebug('Nota creada', newNote);
+      // logDebug eliminado
     } catch (error) {
       logError(error, 'NotesContext createNote');
       throw error;
@@ -68,11 +68,11 @@ export const NotesProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const updateNote = async (id: number, data: { titulo: string; contenido: string; etiquetas: string[] }) => {
-    logDebug('Actualizando nota', { id, ...data });
+    // logDebug eliminado
     try {
       const updatedNote = await apiUpdateNote(id.toString(), data);
       setNotes(prev => prev.map(n => n.id === id ? updatedNote : n));
-      logDebug('Nota actualizada', updatedNote);
+      // logDebug eliminado
     } catch (error) {
       logError(error, 'NotesContext updateNote');
       throw error;
@@ -80,11 +80,11 @@ export const NotesProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const deleteNote = async (id: number) => {
-    logDebug('Eliminando nota', id);
+    // logDebug eliminado
     try {
       await apiDeleteNote(id.toString());
       setNotes(prev => prev.filter(n => n.id !== id));
-      logDebug('Nota eliminada', id);
+      // logDebug eliminado
     } catch (error) {
       logError(error, 'NotesContext deleteNote');
       throw error;

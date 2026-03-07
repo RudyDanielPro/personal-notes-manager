@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { BookOpen, LayoutDashboard, Plus, User, LogOut } from "lucide-react";
+import { BookOpen, LayoutDashboard, Plus, User, LogOut, Users } from "lucide-react"; // Agregamos Users
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -55,6 +55,20 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                 </Link>
               );
             })}
+
+            {/* Botón de admin solo visible para usuarios con rol ADMIN */}
+            {user?.rol === 'ADMIN' && (
+              <Link to="/admin/users">
+                <Button
+                  variant={location.pathname.startsWith('/admin') ? 'secondary' : 'ghost'}
+                  size="sm"
+                  className="gap-2"
+                >
+                  <Users className="h-4 w-4" />
+                  Usuarios
+                </Button>
+              </Link>
+            )}
 
             <Link to="/notes/new">
               <Button size="sm" className="gap-2 shadow-primary">

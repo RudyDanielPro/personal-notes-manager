@@ -7,10 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Plus, X, Save } from "lucide-react";
-import { logDebug, logError } from '../lib/logger';
+import { logError } from '../lib/logger';
 
 const NoteNew = () => {
-  logDebug('Renderizando NoteNew');
   const { createNote } = useNotes();
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
@@ -32,14 +31,12 @@ const NoteNew = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    logDebug('Creando nueva nota', { title, content, tags });
     if (!title || !content) {
       setError('Completa título y contenido');
       return;
     }
     try {
       await createNote({ titulo: title, contenido: content, etiquetas: tags });
-      logDebug('Nota creada correctamente');
       navigate('/dashboard');
     } catch (err) {
       logError(err, 'NoteNew.tsx');

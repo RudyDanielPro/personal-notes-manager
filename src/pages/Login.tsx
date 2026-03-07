@@ -9,7 +9,7 @@ import { BookOpen, Eye, EyeOff, Loader2 } from "lucide-react";
 const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [identificador, setIdentificador] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
@@ -22,10 +22,10 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    if (!email || !password) { setError("Por favor completa todos los campos."); return; }
+    if (!identificador || !password) { setError("Por favor completa todos los campos."); return; }
     setLoading(true);
     try {
-      await login(email, password);
+      await login(identificador, password);
       navigate("/dashboard");
     } catch (err: any) {
       setError(err.message || "Error al iniciar sesión");
@@ -48,18 +48,17 @@ const Login = () => {
         <div className="rounded-2xl border border-border bg-card p-8 shadow-md-custom">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email">Correo electrónico</Label>
+              <Label htmlFor="identificador">Correo electrónico o Usuario</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="tu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="identificador"
+                type="text" 
+                placeholder="tu@email.com o tu_usuario"
+                value={identificador}
+                onChange={(e) => setIdentificador(e.target.value)}
                 className="h-11"
-                /* TRUCO: Solo lectura hasta que el usuario haga foco */
                 readOnly={emailReadOnly}
                 onFocus={() => setEmailReadOnly(false)}
-                autoComplete="email"
+                autoComplete="username"
               />
             </div>
 

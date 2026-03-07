@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { login as apiLogin, register as apiRegister, logout as apiLogout, getCurrentUser } from "@/lib/Api";
-import { logDebug, logError } from '../lib/logger';
+import { logError } from '../lib/logger';
 
 export interface User {
+  username: string;
   id: number;
   nombre: string;
   apellido: string;
@@ -13,7 +14,7 @@ export interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (identificador: string, password: string) => Promise<void>; 
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
@@ -22,6 +23,7 @@ interface AuthContextType {
 export interface RegisterData {
   nombre: string;
   apellido: string;
+  username: string;
   edad: number;
   email: string;
   password: string
@@ -49,16 +51,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loadUser();
   }, []);
 
-  const login = async (email: string, password: string) => {
-    logDebug('Intentando login', { email });
-    try {
-      const response = await apiLogin({ email, password });
-      logDebug('Login response:', response);
-      localStorage.setItem("token", response.token);
-      
+  const login = async (identificador: string, password: string) => {
+  try {
+    const response = await apiLogin({ identificador, password }); 
+    localStorage.setItem("token", response.token);
+
       try {
         const userData = await getCurrentUser();
-        logDebug('UserData response:', userData);
         setUser(userData);
       } catch (meError) {
         logError(meError, 'Error en /auth/me');
@@ -66,13 +65,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           id: 0,
           nombre: response.nombre,
           apellido: "",
+          username: "",
           edad: 0,
           email: response.email,
           rol: response.rol
         });
       }
-      
-      logDebug('Login exitoso');
     } catch (error) {
       logError(error, 'AuthContext login');
       throw error;
@@ -80,10 +78,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const register = async (data: RegisterData) => {
-    logDebug('Intentando registro', data);
     try {
       const response = await apiRegister(data);
-      logDebug('Registro exitoso', response);
       await login(data.email, data.password);
     } catch (error) {
       logError(error, 'AuthContext register');
@@ -92,7 +88,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const logout = () => {
-    logDebug('Logout ejecutado');
     apiLogout();
     setUser(null);
   };

@@ -7,10 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NoteCard } from "@/components/NoteCard";
 import { Search, Plus, StickyNote, Clock } from "lucide-react";
-import { logDebug, logError } from '../lib/logger';
+import { logError } from '../lib/logger';
 
 const Dashboard = () => {
-  logDebug('Renderizando Dashboard');
   const { notes } = useNotes();
   const { user } = useAuth();
 

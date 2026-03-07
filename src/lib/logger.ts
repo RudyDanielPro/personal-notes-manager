@@ -1,10 +1,6 @@
 // src/lib/logger.ts
 // Utilidad para loguear operaciones y errores
 
-export const logDebug = (message: string, ...optionalParams: any[]) => {
-  console.debug(`[DEBUG] ${message}`, ...optionalParams);
-};
-
 export const logError = (error: any, context?: string) => {
   if (context) {
     console.error(`[ERROR] (${context})`, error);
@@ -13,4 +9,4 @@ export const logError = (error: any, context?: string) => {
   }
 };
 
-// Puedes importar y usar logDebug y logError en cualquier parte del proyecto.
+// Puedes importar y usar logError en cualquier parte del proyecto.

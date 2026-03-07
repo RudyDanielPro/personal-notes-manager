@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BookOpen, Eye, EyeOff, Loader2 } from "lucide-react";
-import { logDebug, logError } from '../lib/logger';
+import { logError } from '../lib/logger';
 
 const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ nombre: "", apellido: "", edad: "", email: "", password: "" });
+  const [form, setForm] = useState({ nombre: "", apellido: "", username: "", edad: "", email: "", password: "" });
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,8 +21,7 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    logDebug('Register submit', form);
-    if (!form.nombre || !form.apellido || !form.edad || !form.email || !form.password) {
+    if (!form.nombre || !form.apellido || !form.username || !form.edad || !form.email || !form.password) {
       setError("Por favor completa todos los campos.");
       return;
     }
@@ -38,7 +37,6 @@ const Register = () => {
     setLoading(true);
     try {
       await register({ ...form, edad: ageValue });
-      logDebug('Registro exitoso', form.email);
       navigate("/dashboard");
     } catch (err) {
       logError(err, 'Register.tsx');
@@ -72,6 +70,11 @@ const Register = () => {
                 <Label htmlFor="lastName">Apellido</Label>
                 <Input id="lastName" placeholder="Pérez" value={form.apellido} onChange={set("apellido")} className="h-11" />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="username">Nombre de Usuario</Label>
+              <Input id="username" placeholder="juanperez99" value={form.username} onChange={set("username")} className="h-11" />
             </div>
 
             <div className="space-y-2">

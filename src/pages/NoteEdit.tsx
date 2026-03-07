@@ -7,12 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Plus, X, Save } from "lucide-react";
-import { logDebug, logError } from '../lib/logger';
+import { logError } from '../lib/logger';
 
 const NoteEdit = () => {
   const { id } = useParams<{ id: string }>();
   const numId = Number(id);
-  logDebug('Renderizando NoteEdit', { id: numId });
   const { getNoteById, updateNote } = useNotes();
   const navigate = useNavigate();
   const note = getNoteById(numId);
@@ -40,14 +39,14 @@ const NoteEdit = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    logDebug('Editando nota', { id, title, content, tags });
+    // logDebug eliminado
     if (!title || !content) {
       setError('Completa título y contenido');
       return;
     }
     try {
       await updateNote(numId, { titulo: title, contenido: content, etiquetas: tags });
-      logDebug('Nota editada correctamente');
+      // logDebug eliminado
       navigate('/dashboard');
     } catch (err) {
       logError(err, 'NoteEdit.tsx');
